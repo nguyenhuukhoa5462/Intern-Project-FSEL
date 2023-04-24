@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 using System.Text.Json;
 using System.Text;
 using APIOder.ViewModel.CustomerViewModel;
+using Microsoft.AspNetCore.Authorization;
+using APIOder.Services.Service;
+using APIOder.Services.IService;
 
 namespace APIOder.Controllers
 {
@@ -14,17 +17,20 @@ namespace APIOder.Controllers
     public class OdersController : ControllerBase
     {
         private readonly IOderRepo _oderRepo;
+        private readonly IOderService _oderService;
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _options;
-        public OdersController(IOderRepo oderRepo, HttpClient httpClient)
+        public OdersController(IOderRepo oderRepo, HttpClient httpClient, IOderService oderService)
         {
             _oderRepo = oderRepo;
             _httpClient = httpClient;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _oderService = oderService;
         }
 
         [HttpGet]
         [Route("FindCustomer/{phonenumber}")]
+        [Authorize]
         public async Task<IActionResult> FindCustomer(string phonenumber)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"https://localhost:5001/api/Customers/GetByPhoneNumber/" + phonenumber);
@@ -42,6 +48,7 @@ namespace APIOder.Controllers
             //var customer = JsonConvert.DeserializeObject<Customer>(json);
 
             return Ok(json);
+
         }
 
         [HttpPost]

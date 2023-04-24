@@ -31,6 +31,8 @@ builder.Services.AddApiVersioning(config =>
 });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
+    options.Authority = "https://localhost:5001/Login/Login"; // Điền địa chỉ API của Auth, nơi cung cấp token
+    options.Audience = "your-api-identifier"; // Điền identifier của API được bảo vệ bởi token
     options.RequireHttpsMetadata = false;//tắt yêu cầu https khi giao tiếp giữa client và server(tắt khi chạy ở localhost, nên bật khi chạy ở môi trường sản phẩm để bảo vệ thông tin truyền tải
     options.SaveToken = true; //được sử dụng để lưu trữ JWT token trong HttpContext sau khi nó được xác thực.
     options.TokenValidationParameters = new TokenValidationParameters()
@@ -39,7 +41,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = true, //xác định liệu audience của token có hợp lệ hay không
         ValidAudience = "InternFsel", //tên của audience được cho phép
         ValidIssuer = "https://localhost:5001", //tên của issuer được cho phép
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ThisIsTheSecureKey1234567890")) //khóa bí mật để xác minh tính hợp lệ của token
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ThisIsTheSecureKey1234567890")), //khóa bí mật để xác minh tính hợp lệ của token
+        ValidateIssuerSigningKey = true,
     };
 });
 var app = builder.Build();
@@ -50,7 +53,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//app.Use(async (context, next) =>
+//{
+//    // Lấy token từ cookie hoặc từ request headers
+//    var token = context.Request.Cookies["access_token"] ?? context.Request.Headers["Authorization"];
 
+//    if (!string.IsNullOrEmpty(token))
+//    {
+//        // Add token vào header của request
+//        context.Request.Headers.Add("Authorization", "Bearer " + token);
+//    }
+
+//    await next();
+//});
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
