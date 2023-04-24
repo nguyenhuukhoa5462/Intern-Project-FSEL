@@ -54,7 +54,12 @@
         }
       ],
       "UpstreamPathTemplate": "/apigateway/Customer-GetAll",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+
     },
     {
       "DownstreamPathTemplate": "/api/Customers/GetById/{Id}", //get by id customer
@@ -190,6 +195,20 @@
       "UpstreamHttpMethod": [ "GET" ]
     }
   ],
+  "AuthenticationOptions": {
+    "JwtBearer": {
+      //"Authority": "https://your-auth-server.com",
+      //"Audience": "your-audience",
+      "TokenValidationParameters": {
+        "ValidateIssuerSigningKey": true,
+        "IssuerSigningKey": "your-secret-key",
+        "ValidateIssuer": true,
+        "ValidIssuer": "https://your-auth-server.com",
+        "ValidateAudience": true,
+        "ValidAudience": "your-audience"
+      }
+    }
+  },
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:7001/"
   }

@@ -1,7 +1,9 @@
 ﻿using APICustomer.Repositories.IRepo;
 using APICustomer.ViewModel.CustomerViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace APICustomer.Controllers
 {
@@ -108,9 +110,12 @@ namespace APICustomer.Controllers
 
         [HttpGet]
         [Route("GetByPhoneNumber/{phonenumber}")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> GetByPhoneNumber(string phonenumber)
         {
+            var token = HttpContext.Request.Cookies["access_token"] ?? HttpContext.Request.Headers["Authorization"];
+            var userName = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            return Ok(userName);
             var result = await _customerRepo.GetByPhoneNumber(phonenumber);
             if (result == null) return Ok("Không tìm thấy");
             return Ok(result);

@@ -40,7 +40,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = true, //xác định liệu audience của token có hợp lệ hay không
         ValidAudience = "InternFsel", //tên của audience được cho phép
         ValidIssuer = "https://localhost:5001", //tên của issuer được cho phép
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ThisIsTheSecureKey1234567890")) //khóa bí mật để xác minh tính hợp lệ của token
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ThisIsTheSecureKey1234567890")), //khóa bí mật để xác minh tính hợp lệ của token
+        ValidateIssuerSigningKey = true,
     };
 });
 var app = builder.Build();
