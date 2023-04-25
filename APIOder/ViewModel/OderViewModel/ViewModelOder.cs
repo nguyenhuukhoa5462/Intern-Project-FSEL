@@ -6,6 +6,6 @@
         public Guid IdCustomer { get; set; }
         public DateTime OderDate { get; set; }
         public decimal? TotalPrice { get; set; }
-        public List<ViewModelOderDetail> ListOderDetail { get; set; }
+        public List<ViewModelOderDetail>? ListOderDetail { get; set; }
     }
 }

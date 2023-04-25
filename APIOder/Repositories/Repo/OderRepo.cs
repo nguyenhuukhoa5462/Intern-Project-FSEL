@@ -28,6 +28,7 @@ namespace APIOder.Repositories.Repo
         public async Task<ViewOder> GetByIdOder(Guid Id)
         {
             var oder = await _context.Oders.FindAsync(Id);
+            if (oder == null) return null;
             var listoderdetail = await _context.OderDetails.Where(p => p.OderId == Id).ToListAsync();
 
             ViewOder view = new ViewOder();
@@ -39,17 +40,25 @@ namespace APIOder.Repositories.Repo
             oderobj.OderDate = oder.OderDate;
             oderobj.TotalPrice = oder.TotalPrice;
             view.OderObj = oderobj;
-            foreach (var item in listoderdetail)
+            if(listoderdetail.Count == 0)
             {
-                ViewModelOderDetail detail = new ViewModelOderDetail();
-                detail.Id = item.Id;
-                detail.OderId = item.OderId;
-                detail.Quantity = item.Quantity;
-                detail.UnitPrice = item.UnitPrice;
-                detail.ProductName = item.ProductName;
-                lstOderDetail.Add(detail);
-            };
-            view.OderObj.ListOderDetail = lstOderDetail;
+                view.OderObj.ListOderDetail = null;
+            }
+            else
+            {
+                foreach (var item in listoderdetail)
+                {
+                    ViewModelOderDetail detail = new ViewModelOderDetail();
+                    detail.Id = item.Id;
+                    detail.OderId = item.OderId;
+                    detail.Quantity = item.Quantity;
+                    detail.UnitPrice = item.UnitPrice;
+                    detail.ProductName = item.ProductName;
+                    lstOderDetail.Add(detail);
+                };
+                view.OderObj.ListOderDetail = lstOderDetail;
+            }
+            
             return view;
         }
         public async Task<List<Oder>> GetByIdKhachHang(Guid Id)

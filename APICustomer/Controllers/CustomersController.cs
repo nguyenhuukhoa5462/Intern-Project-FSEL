@@ -52,6 +52,7 @@ namespace APICustomer.Controllers
         //[Authorize]
         public async Task<IActionResult> Create([FromBody] CreateCustomer model)
         {
+
             var result = await _customerRepo.Create(model);
             if (result == null) return BadRequest("Đã xảy ra lỗi, vui lòng thử lại");
             return Ok(result);
@@ -113,9 +114,9 @@ namespace APICustomer.Controllers
         [Authorize]
         public async Task<IActionResult> GetByPhoneNumber(string phonenumber)
         {
-            var token = HttpContext.Request.Cookies["access_token"] ?? HttpContext.Request.Headers["Authorization"];
-            var userName = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
-            return Ok(userName);
+            //var token = HttpContext.Request.Cookies["access_token"] ?? HttpContext.Request.Headers["Authorization"];
+            //var user = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            //var name = HttpContext.User.FindFirst(ClaimTypes.Name).Value;
             var result = await _customerRepo.GetByPhoneNumber(phonenumber);
             if (result == null) return Ok("Không tìm thấy");
             return Ok(result);

@@ -30,11 +30,13 @@ namespace APICustomer.Repositories.Repo
                 var authClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, model.UserName),
+                new Claim(ClaimTypes.Name, user.FullName),
                 /*
                  * JwtRegisteredClaimNames.Jti là một chuỗi hằng số trong thư viện xác thực JSON Web Token (JWT) của .NET, đại diện cho ClaimType "JWT ID" (JTI).
                    Claim JTI thường được sử dụng để đảm bảo tính duy nhất của JWT và phòng tránh việc sử dụng lại JWT sau khi nó đã hết hạn hoặc bị thu hồi. Mỗi JWT sẽ có một giá trị JTI duy nhất và giá trị này thường được tạo ngẫu nhiên.
                  */
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+
             };
                 /*
                  * SymmetricSecurityKey là một đối tượng trong .NET Framework được sử dụng để đại diện cho một khóa bí mật (secret key) được sử dụng để xác thực và mã hóa các thông điệp. Điều này có nghĩa là chúng ta sử dụng cùng một khóa để mã hóa và giải mã thông điệp. 
