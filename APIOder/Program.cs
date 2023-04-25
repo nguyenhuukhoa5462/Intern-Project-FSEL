@@ -1,28 +1,45 @@
 ﻿using APIOder.DatabaseContext;
 using APIOder.Repositories.IRepo;
 using APIOder.Repositories.Repo;
+using APIOder.Services.IService;
+using APIOder.ViewModel.JWT_Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
+using Refit;
+using System.Net.Http.Headers;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var Configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .Build();
 
-// Add services to the container.
-
+var jwtTokenConfig = Configuration.GetSection("JwtTokenConfig").Get<JwtTokenConfig>();
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<AuthenticatedHttpClientHandler>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddRefitClient<IOderService>()
+        .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:5001"))
+        .AddHttpMessageHandler<AuthenticatedHttpClientHandler>();
 builder.Services.AddHttpClient("myHttpClient", client =>
 {
     // Các thiết lập của HttpClient
     client.BaseAddress = new Uri("https://localhost:6001");
 });
+
+
+
 builder.Services.AddDbContext<OderDBContext>(c => c.UseSqlServer("Server=DESKTOP-T4L1DE8\\SQLEXPRESS;Database=Fsel-Oder;Trusted_Connection=True;"));
+
 builder.Services.AddTransient<IOderRepo, OderRepo>();
 builder.Services.AddTransient<IOderDetailRepo, OderDetailRepo>();
+
 builder.Services.AddApiVersioning(config =>
 {
     config.DefaultApiVersion = new ApiVersion(1, 0);
@@ -31,8 +48,8 @@ builder.Services.AddApiVersioning(config =>
 });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
-    options.Authority = "https://localhost:5001/Login/Login"; // Điền địa chỉ API của Auth, nơi cung cấp token
-    options.Audience = "your-api-identifier"; // Điền identifier của API được bảo vệ bởi token
+    //options.Authority = "https://localhost:5001/Login/Login"; // Điền địa chỉ API của Auth, nơi cung cấp token
+    //options.Audience = "your-api-identifier"; // Điền identifier của API được bảo vệ bởi token
     options.RequireHttpsMetadata = false;//tắt yêu cầu https khi giao tiếp giữa client và server(tắt khi chạy ở localhost, nên bật khi chạy ở môi trường sản phẩm để bảo vệ thông tin truyền tải
     options.SaveToken = true; //được sử dụng để lưu trữ JWT token trong HttpContext sau khi nó được xác thực.
     options.TokenValidationParameters = new TokenValidationParameters()
@@ -69,7 +86,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

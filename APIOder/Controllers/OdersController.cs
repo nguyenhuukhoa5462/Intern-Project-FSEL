@@ -9,6 +9,10 @@ using APIOder.ViewModel.CustomerViewModel;
 using Microsoft.AspNetCore.Authorization;
 using APIOder.Services.Service;
 using APIOder.Services.IService;
+using APIOder.Models;
+using Refit;
+using System.Net.Http.Headers;
+
 
 namespace APIOder.Controllers
 {
@@ -30,25 +34,14 @@ namespace APIOder.Controllers
 
         [HttpGet]
         [Route("FindCustomer/{phonenumber}")]
-        [Authorize]
+        [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> FindCustomer(string phonenumber)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"https://localhost:5001/api/Customers/GetByPhoneNumber/" + phonenumber);
+            var response = await _oderService.FindCustomerByPhoneNumber(phonenumber);
+            if (response == "Không tìm thấy") return Ok(response);
 
-            var response = await _httpClient.SendAsync(request);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return BadRequest();
-            }
-
-            var json = await response.Content.ReadAsStringAsync();
-            //if (json == "Không tìm thấy") return Ok(json);
-
-            //var customer = JsonConvert.DeserializeObject<Customer>(json);
-
-            return Ok(json);
-
+            var customer = JsonConvert.DeserializeObject<ViewModelCustomer>(response);
+            return Ok(customer);
         }
 
         [HttpPost]
@@ -65,20 +58,8 @@ namespace APIOder.Controllers
         [Route("CreateCustomer")]
         public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomer create)
         {
-            var url = "https://localhost:5001/api/Customers/CreateCustomer/";
-
-            var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(create), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(url, content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                return Ok(responseString);
-            }
-            else
-            {
-                return StatusCode((int)response.StatusCode);
-            }
+            var response = await _oderService.AddCustomer(create);
+            return Ok(response);
 
         }
         [HttpGet]
@@ -86,37 +67,34 @@ namespace APIOder.Controllers
         public async Task<IActionResult> Get(string Id)
         {
             var oder = await _oderRepo.GetByIdOder(Guid.Parse(Id));
-            var request = new HttpRequestMessage(HttpMethod.Get, $"https://localhost:5001/api/Customers/GetById/" + oder.OderObj.IdCustomer.ToString());
-
-            var response = await _httpClient.SendAsync(request);
-
-            if (!response.IsSuccessStatusCode)
+            if (oder != null)
             {
-                return BadRequest();
-            }
+                var response = await _oderService.GetCustomer(oder.OderObj.IdCustomer.ToString());
 
-            var json = await response.Content.ReadAsStringAsync();
-            if (json == "Không tìm thấy khách hàng")
-            {
-                var responses = new
+                if (response == "Không tìm thấy khách hàng")
                 {
-                    KhachHang = json,
-                    HoaDon = oder.OderObj,
-                };
+                    var responses = new
+                    {
+                        KhachHang = response,
+                        HoaDon = oder.OderObj,
+                    };
 
-                return Ok(responses);
-            }
-            else
-            {
-                var customer = JsonConvert.DeserializeObject<ViewModelCustomer>(json);
-                var responses = new
+                    return Ok(responses);
+                }
+                else
                 {
-                    KhachHang = customer,
-                    HoaDon = oder.OderObj,
-                };
+                    var customer = JsonConvert.DeserializeObject<ViewModelCustomer>(response);
+                    var responses = new
+                    {
+                        KhachHang = customer,
+                        HoaDon = oder.OderObj,
+                    };
 
-                return Ok(responses);
+                    return Ok(responses);
+                }
             }
+            return Ok("Không tìm thấy hóa đơn");
+
 
         }
         [HttpGet]
